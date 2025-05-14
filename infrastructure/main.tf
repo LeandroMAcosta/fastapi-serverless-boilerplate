@@ -49,7 +49,7 @@ resource "aws_cognito_user_pool_client" "main" {
   name         = "${local.name_prefix}-client"
   user_pool_id = aws_cognito_user_pool.main.id
 
-  generate_secret = true
+  generate_secret = false
   explicit_auth_flows = [
     "ALLOW_USER_PASSWORD_AUTH",
     "ALLOW_USER_SRP_AUTH",
@@ -92,7 +92,9 @@ resource "aws_lambda_function" "main" {
     variables = {
       COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
       COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.main.id
+      COGNITO_REGION       = var.aws_region
       DYNAMODB_TABLE_NAME  = aws_dynamodb_table.main.name
+      ENVIRONMENT          = var.environment
     }
   }
 }
@@ -107,8 +109,16 @@ resource "aws_apigatewayv2_api" "main" {
       "https://${aws_cloudfront_distribution.frontend.domain_name}"
     ]
     allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allow_headers = ["*"]
+    allow_headers = [
+      "Content-Type",
+      "Authorization",
+      "X-Amz-Date",
+      "X-Api-Key",
+      "X-Amz-Security-Token",
+      "X-Amz-User-Agent"
+    ]
     allow_credentials = true
+    max_age          = 300
   }
 }
 
@@ -247,6 +257,29 @@ resource "aws_iam_role" "lambda_role" {
 resource "aws_iam_role_policy_attachment" "lambda_basic" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# Add Cognito permissions to Lambda role
+resource "aws_iam_role_policy" "lambda_cognito" {
+  name = "${local.name_prefix}-lambda-cognito-policy"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cognito-idp:AdminInitiateAuth",
+          "cognito-idp:AdminCreateUser",
+          "cognito-idp:AdminSetUserPassword",
+          "cognito-idp:AdminGetUser",
+          "cognito-idp:AdminUpdateUserAttributes"
+        ]
+        Resource = aws_cognito_user_pool.main.arn
+      }
+    ]
+  })
 }
 
 resource "aws_iam_role_policy" "lambda_dynamodb" {

@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from mangum import Mangum
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
 from core.config import get_settings
+from core.auth import get_current_active_user, TokenData
 
 settings = get_settings()
 logger = Logger()
@@ -22,6 +23,13 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+@app.get("/protected")
+async def protected_route(current_user: TokenData = Depends(get_current_active_user)):
+    return {
+        "message": "This is a protected route",
+        "user": current_user.username
+    }
 
 # Lambda handler
 @logger.inject_lambda_context

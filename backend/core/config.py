@@ -11,9 +11,13 @@ class Settings(BaseSettings):
     # AWS Settings
     AWS_REGION: str = "us-east-1"
     
+    # Environment
+    ENVIRONMENT: str = "dev"
+    
     # Cognito Settings
-    COGNITO_USER_POOL_ID: Optional[str] = None
-    COGNITO_CLIENT_ID: Optional[str] = None
+    COGNITO_USER_POOL_ID: str
+    COGNITO_CLIENT_ID: str
+    COGNITO_PUBLIC_KEY: str
     
     # DynamoDB Settings
     DYNAMODB_TABLE_NAME: str = "app-table"

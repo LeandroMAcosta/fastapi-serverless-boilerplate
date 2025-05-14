@@ -43,11 +43,21 @@ COGNITO_CLIENT_ID=$(terraform output -raw cognito_client_id)
 API_ENDPOINT=$(terraform output -raw api_endpoint)
 S3_BUCKET=$(terraform output -raw frontend_bucket)
 CLOUDFRONT_DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)
+AWS_REGION=$(aws configure get region --profile $AWS_PROFILE)
+
+# Create .env file for frontend
+echo "Creating .env file for frontend..."
+cat > ../frontend/.env << EOL
+REACT_APP_AWS_REGION=${AWS_REGION}
+REACT_APP_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
+REACT_APP_COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
+REACT_APP_API_ENDPOINT=${API_ENDPOINT}
+EOL
 
 # Deploy frontend
 echo "Deploying frontend..."
 cd ../frontend
-export AWS_REGION=$(aws configure get region --profile $AWS_PROFILE)
+export AWS_REGION
 export COGNITO_USER_POOL_ID
 export COGNITO_CLIENT_ID
 export API_ENDPOINT
