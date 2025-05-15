@@ -3,12 +3,17 @@ import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 
+interface UserData {
+  message: string;
+  user: string;
+}
+
 const client = generateClient();
 
-const Home = () => {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const Home: React.FC = () => {
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const fetchUserData = useCallback(async () => {
@@ -18,7 +23,7 @@ const Home = () => {
       
       // Get the current session and token
       const { tokens } = await fetchAuthSession();
-      const token = tokens.idToken?.toString();
+      const token = tokens?.idToken?.toString();
       
       if (!token) {
         throw new Error('No authentication token available');
@@ -42,13 +47,13 @@ const Home = () => {
     } catch (err) {
       console.error('Error fetching user data:', err);
       console.error('Error details:', {
-        message: err.message,
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        data: err.response?.data
+        message: err instanceof Error ? err.message : 'Unknown error',
+        status: err instanceof Error && 'response' in err ? (err as any).response?.status : undefined,
+        statusText: err instanceof Error && 'response' in err ? (err as any).response?.statusText : undefined,
+        data: err instanceof Error && 'response' in err ? (err as any).response?.data : undefined
       });
       setError('Failed to fetch user data. Please try again.');
-      if (err.response?.status === 401) {
+      if (err instanceof Error && 'response' in err && (err as any).response?.status === 401) {
         console.log('Unauthorized, redirecting to login...');
         navigate('/login');
       }
@@ -87,14 +92,14 @@ const Home = () => {
           <div className="max-w-md mx-auto">
             <div className="divide-y divide-gray-200">
               <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                <h2 className="text-2xl font-bold mb-4 text-gray-900">FastAPI Serverless Boilerplate</h2>
+                <h2 className="text-2xl font-bold mb-4 text-gray-900">Simple FastAPI Serverless App</h2>
                 {userData && (
                   <div className="space-y-4">
                     <p className="text-gray-600">
                       <span className="font-semibold">Message:</span> {userData.message}
                     </p>
                     <p className="text-gray-600">
-                      <span className="font-semibold">Username:</span> {userData.user}
+                      <span className="font-semibold">Email:</span> {userData.user}
                     </p>
                   </div>
                 )}

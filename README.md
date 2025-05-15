@@ -1,4 +1,4 @@
-# FastAPI Serverless Boilerplate
+# Simple FastAPI Serverless Boilerplate
 
 A production-ready FastAPI serverless boilerplate using AWS Lambda, Cognito, DynamoDB, and Terraform, with a React frontend.
 
