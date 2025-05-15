@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from aws_lambda_powertools import Logger
@@ -12,9 +12,7 @@ logger = Logger()
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    # openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    # docs_url=f"{settings.API_V1_STR}/docs",
-    # redoc_url=f"{settings.API_V1_STR}/redoc",
+    root_path="/dev"
 )
 
 # Add CORS middleware
@@ -47,5 +45,5 @@ async def protected_route(current_user: TokenData = Depends(get_current_active_u
 @logger.inject_lambda_context
 def handler(event: dict, context: LambdaContext) -> dict:
     logger.info("Received event: %s", event)
-    asgi_handler = Mangum(app)
+    asgi_handler = Mangum(app, lifespan="off")
     return asgi_handler(event, context) 

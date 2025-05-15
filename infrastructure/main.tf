@@ -123,18 +123,13 @@ resource "aws_apigatewayv2_stage" "main" {
 resource "aws_apigatewayv2_integration" "main" {
   api_id           = aws_apigatewayv2_api.main.id
   integration_type = "AWS_PROXY"
-
-  connection_type    = "INTERNET"
-  description        = "Lambda integration"
+  description      = "Lambda integration"
+  integration_uri  = aws_lambda_function.main.invoke_arn
   integration_method = "POST"
-  integration_uri    = aws_lambda_function.main.invoke_arn
-
-  request_parameters = {
-    "overwrite:path" = "$request.path.proxy"
-  }
+  payload_format_version = "2.0"
 }
 
-resource "aws_apigatewayv2_route" "main" {
+resource "aws_apigatewayv2_route" "catch_all" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "ANY /{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.main.id}"
