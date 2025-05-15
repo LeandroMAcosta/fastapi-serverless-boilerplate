@@ -38,7 +38,7 @@ async def health_check():
 async def protected_route(current_user: TokenData = Depends(get_current_active_user)):
     return {
         "message": "This is a protected route from AWS Lambda",
-        "user": current_user.email
+        "email": current_user.email
     }
 
 # Lambda handler

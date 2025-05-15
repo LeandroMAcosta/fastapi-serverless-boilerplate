@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface UserData {
   message: string;
-  user: string;
+  email: string;
 }
 
 const client = generateClient();
@@ -99,7 +99,7 @@ const Home: React.FC = () => {
                       <span className="font-semibold">Message:</span> {userData.message}
                     </p>
                     <p className="text-gray-600">
-                      <span className="font-semibold">Email:</span> {userData.user}
+                      <span className="font-semibold">Email:</span> {userData.email}
                     </p>
                   </div>
                 )}

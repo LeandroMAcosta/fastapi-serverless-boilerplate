@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { signOut, getCurrentUser } from '@aws-amplify/auth';
+import { Hub } from '@aws-amplify/core';
 // import { Amplify } from '@aws-amplify/core';
 import { Amplify } from 'aws-amplify';
 import config from './config';
@@ -18,12 +19,26 @@ function App() {
 
   useEffect(() => {
     checkAuthState();
+    
+    // Add auth state listener
+    const listener = Hub.listen('auth', ({ payload: { event } }: { payload: { event: string } }) => {
+      switch (event) {
+        case 'signedIn':
+          setIsAuthenticated(true);
+          break;
+        case 'signedOut':
+          setIsAuthenticated(false);
+          break;
+      }
+    });
+
+    return () => listener();
   }, []);
 
   async function checkAuthState() {
     try {
-      await getCurrentUser();
-      setIsAuthenticated(true);
+      const user = await getCurrentUser();
+      setIsAuthenticated(!!user);
     } catch (err) {
       setIsAuthenticated(false);
     } finally {

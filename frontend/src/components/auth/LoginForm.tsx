@@ -28,11 +28,14 @@ const LoginForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await signIn({
+      const { isSignedIn } = await signIn({
         username: email,
         password
       });
-      navigate('/home');
+      
+      if (isSignedIn) {
+        navigate('/home', { replace: true });
+      }
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
