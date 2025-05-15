@@ -1,10 +1,11 @@
 # FastAPI Serverless Boilerplate
 
-A production-ready FastAPI serverless boilerplate using AWS Lambda, Cognito, DynamoDB, and Terraform.
+A production-ready FastAPI serverless boilerplate using AWS Lambda, Cognito, DynamoDB, and Terraform, with a React frontend.
 
 ## Features
 
 - FastAPI on AWS Lambda
+- React frontend with modern UI components
 - AWS Cognito for authentication
 - DynamoDB for data storage
 - Terraform for Infrastructure as Code
@@ -12,10 +13,12 @@ A production-ready FastAPI serverless boilerplate using AWS Lambda, Cognito, Dyn
 - Pytest for testing
 - Black for code formatting
 - Flake8 for linting
+- Mercado Pago integration for payments
 
 ## Prerequisites
 
 - Python 3.12
+- Node.js 18+ and npm
 - Terraform v1.11.3
 - AWS CLI configured with appropriate credentials
 - Docker (for local development)
@@ -24,16 +27,26 @@ A production-ready FastAPI serverless boilerplate using AWS Lambda, Cognito, Dyn
 
 ```
 .
-├── backend/                    # Application code
-│   ├── api/               # API routes
+├── frontend/                  # React frontend application
+│   ├── src/                  # Source code
+│   │   ├── components/      # React components
+│   │   ├── config.js        # Configuration
+│   │   └── App.js          # Main application
+│   ├── public/             # Static assets
+│   └── package.json        # Frontend dependencies
+├── backend/                  # FastAPI backend
+│   ├── api/                # API routes
+│   │   └── v1/            # API version 1
 │   ├── core/              # Core functionality
-│   ├── models/            # Data models
-│   └── services/          # Business logic
-├── infrastructure/        # Terraform IaC
-├── tests/                 # Test files
-├── .github/              # GitHub Actions workflows
-├── requirements.txt      # Python dependencies
-└── terraform.tfvars      # Terraform variables
+│   ├── package/           # Lambda package
+│   └── main.py           # Application entry point
+├── infrastructure/          # Terraform IaC
+│   ├── main.tf           # Main Terraform configuration
+│   ├── variables.tf      # Terraform variables
+│   └── outputs.tf        # Terraform outputs
+├── scripts/                # Deployment and utility scripts
+│   └── deploy.sh         # Deployment script
+└── requirements.txt        # Python dependencies
 ```
 
 ## Setup
@@ -44,18 +57,24 @@ python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
-2. Install dependencies:
+2. Install backend dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Initialize Terraform:
+3. Install frontend dependencies:
+```bash
+cd frontend
+npm install
+```
+
+4. Initialize Terraform:
 ```bash
 cd infrastructure
 terraform init
 ```
 
-4. Deploy infrastructure:
+5. Deploy infrastructure:
 ```bash
 terraform plan
 terraform apply
@@ -63,9 +82,15 @@ terraform apply
 
 ## Development
 
+### Backend
 - Run tests: `pytest`
 - Format code: `black .`
 - Lint code: `flake8`
+
+### Frontend
+- Start development server: `npm start`
+- Build for production: `npm run build`
+- Run tests: `npm test`
 
 ## Local Development
 
@@ -74,9 +99,22 @@ terraform apply
 docker run -p 8000:8000 amazon/dynamodb-local
 ```
 
-2. Run the application locally:
+2. Run the backend locally:
 ```bash
 uvicorn app.main:app --reload
+```
+
+3. Run the frontend locally:
+```bash
+cd frontend
+npm start
+```
+
+## Deployment
+
+Use the deployment script to deploy both frontend and backend:
+```bash
+./scripts/deploy.sh
 ```
 
 ## API Documentation
