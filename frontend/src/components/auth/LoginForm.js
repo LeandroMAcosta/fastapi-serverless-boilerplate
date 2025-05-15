@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { signIn } from 'aws-amplify/auth';
+import React, { useState, useEffect } from 'react';
+import { signIn, getCurrentUser } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 
 export default function LoginForm() {
@@ -9,6 +9,19 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    checkAuthState();
+  }, []);
+
+  async function checkAuthState() {
+    try {
+      await getCurrentUser();
+      navigate('/home');
+    } catch (err) {
+      // User is not authenticated, stay on login page
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -16,7 +29,7 @@ export default function LoginForm() {
 
     try {
       await signIn({ username: email, password });
-      navigate('/dashboard');
+      navigate('/home');
     } catch (err) {
       setError(err.message);
     } finally {

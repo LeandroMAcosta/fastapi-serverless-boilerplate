@@ -80,10 +80,10 @@ resource "aws_dynamodb_table" "main" {
 
 # Lambda Function
 resource "aws_lambda_function" "main" {
-  filename         = "../build/lambda.zip"
+  filename         = "../build/lambda-${var.hash}.zip"
   function_name    = "${local.name_prefix}-function"
   role            = aws_iam_role.lambda_role.arn
-  handler         = "app.main.handler"
+  handler         = "main.handler"
   runtime         = "python3.12"
   timeout         = 30
   memory_size     = 256
@@ -97,6 +97,8 @@ resource "aws_lambda_function" "main" {
       ENVIRONMENT          = var.environment
     }
   }
+
+  source_code_hash = var.hash
 }
 
 # API Gateway
@@ -104,27 +106,17 @@ resource "aws_apigatewayv2_api" "main" {
   name          = "${local.name_prefix}-api"
   protocol_type = "HTTP"
   cors_configuration {
-    allow_origins = [
-      "http://localhost:3000",
-      "https://${aws_cloudfront_distribution.frontend.domain_name}"
-    ]
+    allow_origins = ["*"]  # Temporarily allow all origins for testing
     allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allow_headers = [
-      "Content-Type",
-      "Authorization",
-      "X-Amz-Date",
-      "X-Api-Key",
-      "X-Amz-Security-Token",
-      "X-Amz-User-Agent"
-    ]
-    allow_credentials = true
-    max_age          = 300
+    allow_headers = ["*"]  # Allow all headers
+    allow_credentials = false
+    max_age = 300
   }
 }
 
 resource "aws_apigatewayv2_stage" "main" {
   api_id = aws_apigatewayv2_api.main.id
-  name   = "prod"
+  name   = var.environment
   auto_deploy = true
 }
 
@@ -136,6 +128,10 @@ resource "aws_apigatewayv2_integration" "main" {
   description        = "Lambda integration"
   integration_method = "POST"
   integration_uri    = aws_lambda_function.main.invoke_arn
+
+  request_parameters = {
+    "overwrite:path" = "$request.path.proxy"
+  }
 }
 
 resource "aws_apigatewayv2_route" "main" {
@@ -303,4 +299,13 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
       }
     ]
   })
+}
+
+# Add Lambda permission for API Gateway
+resource "aws_lambda_permission" "api_gateway" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.main.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
 } 

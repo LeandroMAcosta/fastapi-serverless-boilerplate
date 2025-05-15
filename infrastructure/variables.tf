@@ -26,4 +26,10 @@ variable "dynamodb_table_name" {
   description = "Name of the DynamoDB table"
   type        = string
   default     = "app-table"
+}
+
+variable "hash" {
+  description = "Hash value for cache busting Lambda deployments"
+  type        = string
+  default     = "0"
 } 

@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # Cognito Settings
     COGNITO_USER_POOL_ID: str
     COGNITO_CLIENT_ID: str
-    COGNITO_PUBLIC_KEY: str
+    # COGNITO_PUBLIC_KEY: str
     
     # DynamoDB Settings
     DYNAMODB_TABLE_NAME: str = "app-table"

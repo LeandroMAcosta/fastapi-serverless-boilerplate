@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -16,6 +17,17 @@ app = FastAPI(
     # redoc_url=f"{settings.API_V1_STR}/redoc",
 )
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],  # Allow all headers
+    expose_headers=["*"],
+    max_age=300
+)
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to FastAPI Serverless"}
@@ -27,12 +39,13 @@ async def health_check():
 @app.get("/protected")
 async def protected_route(current_user: TokenData = Depends(get_current_active_user)):
     return {
-        "message": "This is a protected route",
+        "message": "This is a protected route from AWS Lambda",
         "user": current_user.username
     }
 
 # Lambda handler
 @logger.inject_lambda_context
 def handler(event: dict, context: LambdaContext) -> dict:
+    logger.info("Received event: %s", event)
     asgi_handler = Mangum(app)
     return asgi_handler(event, context) 

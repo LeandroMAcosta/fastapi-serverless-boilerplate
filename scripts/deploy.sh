@@ -30,12 +30,33 @@ export AWS_PROFILE
 echo "Using AWS Profile: $AWS_PROFILE"
 echo "Deploying to environment: $ENVIRONMENT"
 
+
+# Random hash for lambda zip file to enforce cache busting and redeploy
+HASH=$(date +%s)
+echo "Hash: $HASH"
+
+# Create build directory if it doesn't exist
+mkdir -p build
+
+# Build backend
+echo "Building backend..."
+cd backend
+pip install --platform manylinux2014_x86_64 --target=./package --implementation cp --python-version 3.12 --only-binary=:all: --upgrade -r requirements.txt
+cp -r *.py core api ./package/
+cd package
+rm -f ../../build/lambda-${HASH}.zip || true
+zip -r ../../build/lambda-${HASH}.zip .
+cd ../..
+
+
 # Deploy backend
 echo "Deploying backend..."
 cd infrastructure
 terraform init
 terraform plan -var="aws_profile=$AWS_PROFILE" -var="environment=$ENVIRONMENT"
-terraform apply -auto-approve -var="aws_profile=$AWS_PROFILE" -var="environment=$ENVIRONMENT"
+terraform apply -auto-approve -var="aws_profile=$AWS_PROFILE" -var="environment=$ENVIRONMENT" -var="hash=${HASH}"
+
+
 
 # Get outputs from Terraform
 COGNITO_USER_POOL_ID=$(terraform output -raw cognito_user_pool_id)

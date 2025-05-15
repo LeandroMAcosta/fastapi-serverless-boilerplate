@@ -7,13 +7,12 @@ const config = {
     },
   },
   API: {
-    REST: {
-      api: {
-        endpoint: process.env.REACT_APP_API_ENDPOINT,
-        region: process.env.REACT_APP_AWS_REGION,
-      },
-    },
-  },
+    GraphQL: {
+      endpoint: process.env.REACT_APP_API_ENDPOINT,
+      region: process.env.REACT_APP_AWS_REGION,
+      authenticationType: 'AMAZON_COGNITO_USER_POOLS'
+    }
+  }
 };
 
 export default config; 
