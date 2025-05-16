@@ -23,3 +23,14 @@ export interface ConfirmSignupCredentials {
   username: string;
   confirmationCode: string;
 }
+
+export interface UserData {
+  email: string;
+  sub: string;
+}
+
+export interface ErrorWithResponse extends Error {
+  response?: {
+    status?: number;
+  };
+}

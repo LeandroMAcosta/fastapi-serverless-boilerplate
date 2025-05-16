@@ -37,12 +37,9 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
-@app.get("/protected")
-async def protected_route(current_user: TokenData = Depends(get_current_active_user)):
-    return {
-        "message": "This is a protected route from AWS Lambda",
-        "email": current_user.email
-    }
+@app.get("/users/me")
+async def get_user_me(current_user: TokenData = Depends(get_current_active_user)):
+    return current_user
 
 # Lambda handler
 @logger.inject_lambda_context

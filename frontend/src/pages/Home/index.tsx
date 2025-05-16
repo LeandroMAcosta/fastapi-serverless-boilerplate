@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
-
-interface UserData {
-  message: string;
-  user: string;
-}
-
-interface ErrorWithResponse extends Error {
-  response?: {
-    status?: number;
-  };
-}
+import { UserData, ErrorWithResponse } from '../../types/auth';
+import { fetchUserData } from '../../services/user/userService';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ErrorMessage } from '../../components/common/ErrorMessage';
 
 const Home: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -20,7 +13,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const loadUserData = async () => {
       try {
         setLoading(true);
         const { tokens } = await fetchAuthSession();
@@ -30,19 +23,8 @@ const Home: React.FC = () => {
           throw new Error('No authentication token available');
         }
 
-        const response = await fetch(`${process.env.REACT_APP_API_ENDPOINT}/dev/protected`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        setUserData(data);
+        const userData = await fetchUserData(token);
+        setUserData(userData);
         setError(null);
       } catch (err) {
         console.error('Error fetching user data:', err);
@@ -56,29 +38,12 @@ const Home: React.FC = () => {
       }
     };
 
-    fetchUserData();
+    loadUserData();
   }, [navigate]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline"> {error}</span>
-        </div>
-      </div>
-    );
-  }
-
-  console.log('User data:', userData);
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <div className="text-center">
@@ -87,10 +52,7 @@ const Home: React.FC = () => {
         {userData && (
           <div className="mt-6 space-y-4">
             <p className="text-gray-600">
-              <span className="font-semibold">Message:</span> {userData.message}
-            </p>
-            <p className="text-gray-600">
-              <span className="font-semibold">Email:</span> {userData.user}
+              <span className="font-semibold">Email:</span> {userData.email}
             </p>
           </div>
         )}

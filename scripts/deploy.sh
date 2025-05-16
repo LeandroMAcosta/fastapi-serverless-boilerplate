@@ -72,7 +72,7 @@ cat > ../frontend/.env << EOL
 REACT_APP_AWS_REGION=${AWS_REGION}
 REACT_APP_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
 REACT_APP_COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
-REACT_APP_API_ENDPOINT=${API_ENDPOINT}
+REACT_APP_API_ENDPOINT=${API_ENDPOINT}/${ENVIRONMENT}
 EOL
 
 # Deploy frontend
@@ -85,11 +85,13 @@ export API_ENDPOINT
 export S3_BUCKET
 export CLOUDFRONT_DISTRIBUTION_ID
 
-npm install
+npm install --legacy-peer-deps
 npm run build
 
+# fastapi-serverless-dev-frontend
 aws s3 sync build/ s3://${S3_BUCKET} --delete
 
+# EAYRCO3FU0TV3
 aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/*"
 
 echo "Deployment completed successfully!" 
