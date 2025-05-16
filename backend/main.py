@@ -28,6 +28,9 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
+    # dynamo
+    # guardar cosas
+    # cognito_user_id
     return {"message": "Welcome to FastAPI Serverless"}
 
 @app.get("/health")

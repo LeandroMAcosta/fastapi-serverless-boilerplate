@@ -1,59 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { signOut, getCurrentUser } from '@aws-amplify/auth';
-import { Hub } from '@aws-amplify/core';
-// import { Amplify } from '@aws-amplify/core';
 import { Amplify } from 'aws-amplify';
-import config from './config';
-import LoginForm from './components/auth/LoginForm';
-import SignupForm from './components/auth/SignupForm';
-import ConfirmSignupForm from './components/auth/ConfirmSignupForm';
-import Home from './components/Home';
+import config from './config/amplify';
+import { useAuth } from './hooks/useAuth';
+import { MainLayout } from './components/layout/MainLayout';
+import LoginForm from './pages/Auth/LoginForm';
+import SignupForm from './pages/Auth/SignupForm';
+import ConfirmSignupForm from './pages/Auth/ConfirmSignupForm';
+import Home from './pages/Home';
 
 // Initialize Amplify
 Amplify.configure(config);
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    checkAuthState();
-    
-    // Add auth state listener
-    const listener = Hub.listen('auth', ({ payload: { event } }: { payload: { event: string } }) => {
-      switch (event) {
-        case 'signedIn':
-          setIsAuthenticated(true);
-          break;
-        case 'signedOut':
-          setIsAuthenticated(false);
-          break;
-      }
-    });
-
-    return () => listener();
-  }, []);
-
-  async function checkAuthState() {
-    try {
-      const user = await getCurrentUser();
-      setIsAuthenticated(!!user);
-    } catch (err) {
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      setIsAuthenticated(false);
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -64,33 +24,9 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {isAuthenticated && (
-        <nav className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex">
-                <div className="flex-shrink-0 flex items-center">
-                  <span className="text-xl font-bold text-indigo-600">Simple FastAPI Serverless App</span>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <button
-                  onClick={handleSignOut}
-                  className="ml-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-      )}
+    <MainLayout>
       <Routes>
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to="/home" /> : <LoginForm />}
-        />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/home" /> : <LoginForm />} />
         <Route
           path="/signup"
           element={isAuthenticated ? <Navigate to="/home" /> : <SignupForm />}
@@ -99,19 +35,10 @@ function App() {
           path="/confirm-signup"
           element={isAuthenticated ? <Navigate to="/home" /> : <ConfirmSignupForm />}
         />
-        <Route
-          path="/home"
-          element={
-            isAuthenticated ? (
-              <Home />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} />} />
+        <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to={isAuthenticated ? '/home' : '/login'} />} />
       </Routes>
-    </div>
+    </MainLayout>
   );
 }
 

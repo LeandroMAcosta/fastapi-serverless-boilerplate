@@ -25,7 +25,7 @@ resource "aws_cognito_user_pool" "main" {
     minimum_length    = 8
     require_lowercase = true
     require_numbers   = true
-    require_symbols   = true
+    require_symbols   = false
     require_uppercase = true
   }
 

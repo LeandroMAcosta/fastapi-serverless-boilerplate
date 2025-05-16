@@ -4,16 +4,29 @@ A production-ready FastAPI serverless boilerplate using AWS Lambda, Cognito, Dyn
 
 ## Features
 
-- FastAPI on AWS Lambda
-- React frontend with modern UI components
-- AWS Cognito for authentication
-- DynamoDB for data storage
-- Terraform for Infrastructure as Code
-- AWS Lambda Powertools for observability
-- Pytest for testing
-- Black for code formatting
-- Flake8 for linting
-- Mercado Pago integration for payments
+### Backend Stack
+- FastAPI - Modern, high-performance web framework
+- AWS Lambda - Serverless backend deployment
+- DynamoDB - NoSQL database for flexible data storage
+- AWS Lambda Powertools - Enhanced observability and logging
+- Pytest - Comprehensive testing framework
+
+### Frontend Stack
+- React - Modern UI framework
+- S3 + CloudFront - Global CDN for frontend deployment
+- AWS Cognito - Secure user authentication and management
+
+### Development Tools
+- Terraform - Infrastructure as Code (IaC)
+- Black - Python code formatting
+- Flake8 - Python code linting
+- Docker - Containerized local development
+
+### Security & Infrastructure
+- AWS Cognito - User authentication and authorization
+- CloudFront - DDoS protection and SSL/TLS
+- IAM - Fine-grained access control
+- VPC - Network isolation and security
 
 ## Prerequisites
 
